@@ -1,0 +1,7 @@
+{"files": [
+        "./forwarding_server.ts",
+        "./typings/node.d.ts",
+        "./typings/mysql.d.ts",
+        "./typings/proxy.d.ts",
+        "./typings/commsql.d.ts"
+]}
