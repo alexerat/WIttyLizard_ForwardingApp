@@ -1,7 +1,16 @@
-{"files": [
-        "./forwarding_server.ts",
+{
+    "compilerOptions": 
+    {
+        "target": "es5",
+        "lib": [ "es6", "dom", "dom.iterable", "scripthost" ],
+        "watch": true
+    }, 
+    "files": 
+    [
+        "./app.ts",
         "./typings/node.d.ts",
         "./typings/mysql.d.ts",
         "./typings/proxy.d.ts",
         "./typings/commsql.d.ts"
-]}
+    ]
+}

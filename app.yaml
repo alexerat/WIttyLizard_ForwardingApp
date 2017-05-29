@@ -1,0 +1,8 @@
+runtime: nodejs
+env: flex
+manual_scaling:
+  instances: 1
+env_variables:
+  DATABASE_HOST: '146.148.89.71'
+  DATABASE_USER: 'forwarding'
+  DATABASE_PASSWORD: '6,2Zi6+ez5N8dA!#'
