@@ -18,6 +18,8 @@ var servers = [];
 var lookUpTable = {};
 var server = http.createServer(function (req, res) {
     var roomToken = 'split rq here';
+    console.log('Started trying to foward.');
+    console.log('Request: ' + req);
     if (lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined) {
         my_sql_pool.getConnection(function (err, connection) {
             connection.query('USE Online_Comms', function (err) {
@@ -70,6 +72,8 @@ var server = http.createServer(function (req, res) {
 });
 server.on('upgrade', function (req, socket, head) {
     var roomToken = 'split rq here';
+    console.log('Started trying to foward.');
+    console.log('Request: ' + req);
     if (lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined) {
         my_sql_pool.getConnection(function (err, connection) {
             connection.query('USE Online_Comms', function (err) {

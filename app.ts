@@ -32,6 +32,9 @@ let server = http.createServer(
 {
     let roomToken = 'split rq here';
 
+    console.log('Started trying to foward.');
+    console.log('Request: ' + req);
+
     if(lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined)
     {
         my_sql_pool.getConnection((err, connection) =>
@@ -109,6 +112,9 @@ server.on('upgrade',
 (req, socket, head) =>
 {
     let roomToken = 'split rq here';
+
+    console.log('Started trying to foward.');
+    console.log('Request: ' + req);
 
     if(lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined)
     {
