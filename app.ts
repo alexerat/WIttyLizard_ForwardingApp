@@ -1,6 +1,8 @@
 
 import { Proxy } from "./typings/proxy";
 
+require('@google-cloud/debug-agent').start();
+
 const http = require('http');
 const httpProxy: Proxy.Server = require('http-proxy');
 const mysql: MySql.MySqlModule = require('mysql');
@@ -30,7 +32,7 @@ let lookUpTable: IDictionary = {};
 let server = http.createServer(
 (req, res) =>
 {
-    let roomToken = 'split rq here';
+    let roomToken = req.url.split('/').pop();
 
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
@@ -111,7 +113,7 @@ let server = http.createServer(
 server.on('upgrade',
 (req, socket, head) =>
 {
-    let roomToken = 'split rq here';
+    let roomToken = req.url.split('/').pop();
 
     console.log('Started trying to foward.');
     console.log('Request: ' + req);

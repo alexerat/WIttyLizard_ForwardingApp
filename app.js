@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require('@google-cloud/debug-agent').start();
 var http = require('http');
 var httpProxy = require('http-proxy');
 var mysql = require('mysql');
@@ -17,7 +18,7 @@ var proxy = httpProxy.createProxyServer({});
 var servers = [];
 var lookUpTable = {};
 var server = http.createServer(function (req, res) {
-    var roomToken = 'split rq here';
+    var roomToken = req.url.split('/').pop();
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
     if (lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined) {
@@ -71,7 +72,7 @@ var server = http.createServer(function (req, res) {
     }
 });
 server.on('upgrade', function (req, socket, head) {
-    var roomToken = 'split rq here';
+    var roomToken = req.url.split('/').pop();
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
     if (lookUpTable[roomToken] == null || lookUpTable[roomToken] == undefined) {
