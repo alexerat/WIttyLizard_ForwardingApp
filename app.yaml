@@ -1,5 +1,11 @@
 runtime: nodejs
 env: flex
+skip_files:
+  - ^(.*/)?\.ts$
+network:
+  forwarded_ports:
+    - 9001/tcp
+    - 9001/udp
 manual_scaling:
   instances: 1
 env_variables:
