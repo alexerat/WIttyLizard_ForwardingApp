@@ -34,6 +34,9 @@ function serverLookup(roomToken, success) {
             my_sql_pool.getConnection(function (err, connection) {
                 if (err) {
                     console.log('Error getting databse connection. ' + err);
+                    console.log(dbHost);
+                    console.log(dbUser);
+                    console.log(dbPass);
                     return;
                 }
                 connection.query('USE Online_Comms', function (err) {

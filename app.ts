@@ -55,6 +55,9 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
                 if(err)
                 {
                     console.log('Error getting databse connection. ' + err);
+                    console.log(dbHost);
+                    console.log(dbUser);
+                    console.log(dbPass);
                     return;
                 }
 
