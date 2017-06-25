@@ -9,6 +9,9 @@ network:
 manual_scaling:
   instances: 1
 env_variables:
+  MEMCACHE_URL: memcached-13311.c1.us-central1-2.gce.cloud.redislabs.com:13311
+  MEMCACHE_USERNAME: wittylizard
+  MEMCACHE_PASSWORD: wittypass
   DATABASE_HOST: '146.148.89.71'
   DATABASE_USER: 'forwarding'
   DATABASE_PASSWORD: '6,2Zi6+ez5N8dA!#'

@@ -52,6 +52,12 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
         {
             my_sql_pool.getConnection((err, connection) =>
             {
+                if(err)
+                {
+                    console.log('Error getting databse connection. ' + err);
+                    return;
+                }
+
                 connection.query('USE Online_Comms',
                 (err) =>
                 {

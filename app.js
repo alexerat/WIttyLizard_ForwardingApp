@@ -32,6 +32,10 @@ function serverLookup(roomToken, success) {
         }
         if (sID == null) {
             my_sql_pool.getConnection(function (err, connection) {
+                if (err) {
+                    console.log('Error getting databse connection. ' + err);
+                    return;
+                }
                 connection.query('USE Online_Comms', function (err) {
                     if (err) {
                         console.error('Error while setting database schema. ' + err);
