@@ -22,10 +22,10 @@ let dbUser = process.env.DATABASE_USER;
 let dbPass = process.env.DATABASE_PASSWORD;
 
 let my_sql_pool = mysql.createPool({
-  host     : dbHost,
-  user     : dbUser,
-  password : dbPass,
-  database : 'Online_Comms',
+  socketPath: dbHost,
+  user      : dbUser,
+  password  : dbPass,
+  database  : 'Online_Comms',
   supportBigNumbers: true
 });
 

@@ -15,7 +15,7 @@ var dbHost = process.env.DATABASE_HOST;
 var dbUser = process.env.DATABASE_USER;
 var dbPass = process.env.DATABASE_PASSWORD;
 var my_sql_pool = mysql.createPool({
-    host: dbHost,
+    socketPath: dbHost,
     user: dbUser,
     password: dbPass,
     database: 'Online_Comms',
