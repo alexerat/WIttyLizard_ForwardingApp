@@ -14,4 +14,5 @@ env_variables:
   MEMCACHE_PASSWORD: 'wittypass'
   DATABASE_HOST: '/cloudsql/wittylizard-168912:us-central1:wittydev'
   DATABASE_USER: 'forwarding'
+  DATABASE_PASSWORD: '6,2Zi6+ez5N8dA!#'
   SQL_CLIENT: 'mysql'
