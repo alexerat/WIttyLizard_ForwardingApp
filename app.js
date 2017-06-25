@@ -24,6 +24,21 @@ var my_sql_pool = mysql.createPool({
 var proxy = httpProxy.createProxyServer({});
 var servers = [];
 var lookUpTable = {};
+var connection = mysql.createConnection({
+    socketPath: dbHost,
+    user: dbUser,
+    password: dbPass,
+    database: 'Online_Comms',
+    supportBigNumbers: true
+});
+connection.connect();
+console.log('Testing connection.');
+connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+    if (error)
+        throw error;
+    console.log('First server is: ', results[0].Server_ID);
+});
+connection.end();
 function serverLookup(roomToken, success) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, function (err, sID, key) {

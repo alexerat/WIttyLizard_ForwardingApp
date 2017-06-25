@@ -38,6 +38,25 @@ interface IDictionary {
 let servers: Array<SQLTutorialServer> = [];
 let lookUpTable: IDictionary = {};
 
+let connection = mysql.createConnection({
+    socketPath: dbHost,
+    user      : dbUser,
+    password  : dbPass,
+    database  : 'Online_Comms',
+    supportBigNumbers: true
+});
+
+connection.connect();
+
+console.log('Testing connection.');
+
+connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+    if (error) throw error;
+    console.log('First server is: ', results[0].Server_ID);
+});
+
+connection.end();
+
 function serverLookup(roomToken: string, success: (endpoint, port) => void) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, (err, sID, key) =>
@@ -50,6 +69,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
 
         if(sID == null)
         {
+            
             my_sql_pool.getConnection((err, connection) =>
             {
                 if(err)
