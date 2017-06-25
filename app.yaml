@@ -9,6 +9,7 @@ network:
 manual_scaling:
   instances: 1
 env_variables:
+  NODE_ENV: "production"
   MEMCACHE_URL: 'memcached-13311.c1.us-central1-2.gce.cloud.redislabs.com:13311'
   MEMCACHE_USERNAME: 'wittylizard'
   MEMCACHE_PASSWORD: 'wittypass'
