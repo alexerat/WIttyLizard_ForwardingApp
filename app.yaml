@@ -6,6 +6,8 @@ network:
   forwarded_ports:
     - 9001/tcp
     - 9001/udp
+    - 3306/tcp
+    - 3306/udp
 manual_scaling:
   instances: 1
 env_variables:
