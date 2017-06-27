@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require('@google-cloud/debug-agent').start();
+var Knex = require('knex');
 var http = require('http');
 var memjs = require('memjs');
 var httpProxy = require('http-proxy');
@@ -24,6 +25,17 @@ var my_sql_pool = mysql.createPool({
 var proxy = httpProxy.createProxyServer({});
 var servers = [];
 var lookUpTable = {};
+var knex = Knex({
+    client: 'mysql',
+    connection: {
+        socketPath: dbHost,
+        user: dbUser,
+        password: dbPass,
+        database: 'Online_Comms'
+    }
+});
+var tutes = knex.select().from('Tutorial_Room_Table').timeout(1000);
+console.log(tutes[0]);
 var connection = mysql.createConnection({
     socketPath: dbHost,
     user: dbUser,

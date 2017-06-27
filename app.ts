@@ -3,6 +3,8 @@ import { Proxy } from "./typings/proxy";
 
 require('@google-cloud/debug-agent').start();
 
+const Knex = require('knex');
+
 const http = require('http');
 const memjs = require('memjs');
 const httpProxy: Proxy.Server = require('http-proxy');
@@ -37,6 +39,20 @@ interface IDictionary {
 
 let servers: Array<SQLTutorialServer> = [];
 let lookUpTable: IDictionary = {};
+
+const knex = Knex({
+    client: 'mysql',
+    connection: {
+        socketPath: dbHost,
+        user      : dbUser,
+        password  : dbPass,
+        database  : 'Online_Comms'
+    }
+});
+
+let tutes = knex.select().from('Tutorial_Room_Table').timeout(1000);
+
+console.log(tutes[0]);
 
 let connection = mysql.createConnection({
     socketPath: dbHost,
