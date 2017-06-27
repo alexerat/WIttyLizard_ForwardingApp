@@ -63,7 +63,7 @@ let connection = mysql.createConnection({
     supportBigNumbers: true
 });
 
-connection.connect();
+//connection.connect();
 
 //connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
 //    if (error) throw error;
