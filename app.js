@@ -34,8 +34,9 @@ var knex = Knex({
         database: 'Online_Comms'
     }
 });
-var tutes = knex.select().from('Tutorial_Room_Table').timeout(1000);
-console.log(tutes[0]);
+knex.select().from('Tutorial_Room_Table').timeout(1000).then(function (results) {
+    console.log(results[0]);
+});
 var connection = mysql.createConnection({
     socketPath: dbHost,
     user: dbUser,
@@ -45,11 +46,10 @@ var connection = mysql.createConnection({
 });
 connection.connect();
 console.log('Testing connection.');
-connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-    if (error)
-        throw error;
-    console.log('First server is: ', results[0].Server_ID);
-});
+//connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+//    if (error) throw error;
+//    console.log('First server is: ', results[0].Server_ID);
+//});
 connection.end();
 function serverLookup(roomToken, success) {
     console.log('Looking up server....');

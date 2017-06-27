@@ -50,9 +50,9 @@ const knex = Knex({
     }
 });
 
-let tutes = knex.select().from('Tutorial_Room_Table').timeout(1000);
-
-console.log(tutes[0]);
+knex.select().from('Tutorial_Room_Table').timeout(1000).then((results) => {
+    console.log(results[0]);
+});
 
 let connection = mysql.createConnection({
     socketPath: dbHost,
@@ -66,10 +66,10 @@ connection.connect();
 
 console.log('Testing connection.');
 
-connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-    if (error) throw error;
-    console.log('First server is: ', results[0].Server_ID);
-});
+//connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+//    if (error) throw error;
+//    console.log('First server is: ', results[0].Server_ID);
+//});
 
 connection.end();
 
