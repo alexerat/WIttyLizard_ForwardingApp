@@ -37,7 +37,11 @@ var knex = Knex({
 knex.select().from('Tutorial_Room_Table').timeout(1000).then(function (results) {
     console.log(results[0]);
     throw 'This';
+}).catch(function (e) {
+    console.error(e);
+    throw e;
 });
+;
 var connection = mysql.createConnection({
     socketPath: dbHost,
     user: dbUser,
