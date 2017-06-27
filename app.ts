@@ -44,16 +44,16 @@ const knex = Knex({
     client: 'mysql',
     connection: {
         socketPath: dbHost,
-        user      : dbUser,
-        password  : dbPass,
+        user      : 'whiteboard',
+        password  : 'u;Fq>5QPqVvAhsCy',
         database  : 'Online_Comms'
     }
 });
 
-//knex.select().from('Tutorial_Room_Table').timeout(1000).then((results) => {
-//    console.log(results[0]);
-//    throw 'This';
-//});
+knex.select().from('Tutorial_Room_Table').timeout(1000).then((results) => {
+    console.log(results[0]);
+    throw 'This';
+});
 
 let connection = mysql.createConnection({
     socketPath: dbHost,
@@ -65,12 +65,12 @@ let connection = mysql.createConnection({
 
 connection.connect();
 
-connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-    if (error) throw error;
-    console.log('First server is: ', results[0].Server_ID);
-});
+//connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+//    if (error) throw error;
+//    console.log('First server is: ', results[0].Server_ID);
+//});
 
-connection.end();
+//connection.end();
 
 function serverLookup(roomToken: string, success: (endpoint, port) => void) {
     console.log('Looking up server....');
