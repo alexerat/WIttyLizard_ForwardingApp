@@ -14,7 +14,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64; chmod +x cloud_sql_proxy; mkdir /cloudsql; chmod 777 /cloudsql; ./cloud_sql_proxy -projects=wittylizard-168912 -dir=/cloudsql &; node app.js"
+    "start": "curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && chmod +x cloud_sql_proxy && mkdir /cloudsql && chmod 777 /cloudsql && ./cloud_sql_proxy -projects=wittylizard-168912 -dir=/cloudsql & node app.js"
   },
   "repository": {
     "type": "git",
