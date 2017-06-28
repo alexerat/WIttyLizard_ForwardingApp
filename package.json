@@ -6,7 +6,6 @@
   "dependencies": {
     "http": "^0.0.0",
     "http-proxy": "^1.16.2",
-    "knex": "^0.13.0",
     "mysql": "^2.13.0",
     "memjs": "^0.10.0",
     "@google-cloud/debug-agent": "^2.0.0"
@@ -14,7 +13,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && chmod +x cloud_sql_proxy && mkdir /cloudsql && chmod 777 /cloudsql && ./cloud_sql_proxy -projects=wittylizard-168912 -dir=/cloudsql & sleep 10 && node app.js"
+    "start": "curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && chmod +x cloud_sql_proxy && mkdir /cloudsql && chmod 777 /cloudsql && ./cloud_sql_proxy -projects=wittylizard-168912 -dir=/cloudsql &> /dev/null && sleep 10 && node app.js"
   },
   "repository": {
     "type": "git",

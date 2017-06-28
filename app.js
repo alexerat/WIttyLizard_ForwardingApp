@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require('@google-cloud/debug-agent').start();
-var Knex = require('knex');
 var http = require('http');
 var memjs = require('memjs');
 var httpProxy = require('http-proxy');
@@ -25,23 +24,6 @@ var my_sql_pool = mysql.createPool({
 var proxy = httpProxy.createProxyServer({});
 var servers = [];
 var lookUpTable = {};
-var knex = Knex({
-    client: 'mysql',
-    connection: {
-        socketPath: dbHost,
-        user: 'whiteboard',
-        password: 'u;Fq>5QPqVvAhsCy',
-        database: 'Online_Comms'
-    }
-});
-knex.select().from('Tutorial_Room_Table').timeout(1000).then(function (results) {
-    console.log(results[0]);
-    throw 'This';
-}).catch(function (e) {
-    console.error(e);
-    throw e;
-});
-;
 var connection = mysql.createConnection({
     socketPath: dbHost,
     user: dbUser,
@@ -49,12 +31,13 @@ var connection = mysql.createConnection({
     database: 'Online_Comms',
     supportBigNumbers: true
 });
-//connection.connect();
-//connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-//    if (error) throw error;
-//    console.log('First server is: ', results[0].Server_ID);
-//});
-//connection.end();
+connection.connect();
+connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+    if (error)
+        throw error;
+    console.log('First server is: ', results[0].Server_ID);
+});
+connection.end();
 function serverLookup(roomToken, success) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, function (err, sID, key) {
