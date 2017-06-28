@@ -3,8 +3,6 @@ import { Proxy } from "./typings/proxy";
 
 require('@google-cloud/debug-agent').start();
 
-const Knex = require('knex');
-
 const http = require('http');
 const memjs = require('memjs');
 const httpProxy: Proxy.Server = require('http-proxy');
@@ -40,24 +38,6 @@ interface IDictionary {
 let servers: Array<SQLTutorialServer> = [];
 let lookUpTable: IDictionary = {};
 
-const knex = Knex({
-    client: 'mysql',
-    connection: {
-        socketPath: dbHost,
-        user      : 'whiteboard',
-        password  : 'u;Fq>5QPqVvAhsCy',
-        database  : 'Online_Comms'
-    }
-});
-
-knex.select().from('Tutorial_Room_Table').timeout(1000).then((results) => {
-    console.log(results[0]);
-    throw 'This';
-}).catch((e) => {
-    console.error(e);
-    throw e;
-});;
-
 let connection = mysql.createConnection({
     socketPath: dbHost,
     user      : dbUser,
@@ -66,14 +46,14 @@ let connection = mysql.createConnection({
     supportBigNumbers: true
 });
 
-//connection.connect();
+connection.connect();
 
-//connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-//    if (error) throw error;
-//    console.log('First server is: ', results[0].Server_ID);
-//});
+connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
+    if (error) throw error;
+    console.log('First server is: ', results[0].Server_ID);
+});
 
-//connection.end();
+connection.end();
 
 function serverLookup(roomToken: string, success: (endpoint, port) => void) {
     console.log('Looking up server....');
