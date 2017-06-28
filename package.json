@@ -14,6 +14,9 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "post-deploy-cmd": [
+      "wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 && mv cloud_sql_proxy.linux.amd64 cloud_sql_proxy && chmod +x cloud_sql_proxy && mkdir /cloudsql && sudo chmod 777 /cloudsql && ./cloud_sql_proxy -dir=/cloudsql &"
+    ],
     "start": "node app.js"
   },
   "repository": {
