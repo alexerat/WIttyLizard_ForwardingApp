@@ -31,13 +31,6 @@ var connection = mysql.createConnection({
     database: 'Online_Comms',
     supportBigNumbers: true
 });
-connection.connect();
-connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-    if (error)
-        throw error;
-    console.log('First server is: ', results[0].Server_ID);
-});
-connection.end();
 function serverLookup(roomToken, success) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, function (err, sID, key) {
@@ -134,14 +127,14 @@ function serverLookup(roomToken, success) {
                     console.error('Error while querying memcached. ' + err);
                 }
                 if (endPoint == null) {
-                    console.error('Error while querying memcached. ' + err);
+                    console.error('Error while querying memcached. End Point is null.');
                 }
                 mc.get('PORT_' + sID, function (err, port, key) {
                     if (err != null || err != undefined) {
                         console.error('Error while querying memcached. ' + err);
                     }
                     if (port == null) {
-                        console.error('Error while querying memcached. ' + err);
+                        console.error('Error while querying memcached. Port is null.');
                     }
                     console.log('Got everything!');
                     success(endPoint, port);
@@ -152,7 +145,7 @@ function serverLookup(roomToken, success) {
 }
 ;
 var server = http.createServer(function (req, res) {
-    var roomToken = req.url.split('/').pop();
+    var roomToken = req.url.split('/').pop().split('?')[0];
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
     serverLookup(roomToken, function (endPoint, port) {
@@ -163,7 +156,7 @@ var server = http.createServer(function (req, res) {
     });
 });
 server.on('upgrade', function (req, socket, head) {
-    var roomToken = req.url.split('/').pop();
+    var roomToken = req.url.split('/').pop().split('?')[0];
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
     serverLookup(roomToken, function (endPoint, port) {

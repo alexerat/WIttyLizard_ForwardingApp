@@ -46,15 +46,6 @@ let connection = mysql.createConnection({
     supportBigNumbers: true
 });
 
-connection.connect();
-
-connection.query('SELECT * FROM Tutorial_Room_Table', function (error, results, fields) {
-    if (error) throw error;
-    console.log('First server is: ', results[0].Server_ID);
-});
-
-connection.end();
-
 function serverLookup(roomToken: string, success: (endpoint, port) => void) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, (err, sID, key) =>
@@ -202,7 +193,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
 
                 if(endPoint == null)
                 {
-                    console.error('Error while querying memcached. ' + err);
+                    console.error('Error while querying memcached. End Point is null.');
                 }
 
                 mc.get('PORT_' + sID, (err, port, key) =>
@@ -214,7 +205,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
 
                     if(port == null)
                     {
-                        console.error('Error while querying memcached. ' + err);
+                        console.error('Error while querying memcached. Port is null.');
                     }
 
                     console.log('Got everything!');
@@ -228,7 +219,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
 let server = http.createServer(
 (req, res) =>
 {
-    let roomToken = req.url.split('/').pop();
+    let roomToken = req.url.split('/').pop().split('?')[0];
 
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
@@ -245,7 +236,7 @@ let server = http.createServer(
 server.on('upgrade',
 (req, socket, head) =>
 {
-    let roomToken = req.url.split('/').pop();
+    let roomToken = req.url.split('/').pop().split('?')[0];
 
     console.log('Started trying to foward.');
     console.log('Request: ' + req);
@@ -267,5 +258,5 @@ proxy.on('error', function (err, req, res) {
     res.end('Something went wrong. And we are reporting a custom error message.');
 });
 
-console.log("listening on port 9001")
+console.log("listening on port 9001");
 server.listen(9001);
