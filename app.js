@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require('@google-cloud/debug-agent').start();
 var http = require('http');
 var memjs = require('memjs');
 var httpProxy = require('http-proxy');

@@ -1,8 +1,6 @@
 
 import { Proxy } from "./typings/proxy";
 
-require('@google-cloud/debug-agent').start();
-
 const http = require('http');
 const memjs = require('memjs');
 const httpProxy: Proxy.Server = require('http-proxy');

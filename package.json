@@ -7,8 +7,7 @@
     "http": "^0.0.0",
     "http-proxy": "^1.16.2",
     "mysql": "^2.13.0",
-    "memjs": "^0.10.0",
-    "@google-cloud/debug-agent": "^2.0.0"
+    "memjs": "^0.10.0"
   },
   "engines": {
     "node": ">=4.3.2"
