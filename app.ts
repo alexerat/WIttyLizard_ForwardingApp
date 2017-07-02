@@ -44,7 +44,7 @@ let connection = mysql.createConnection({
     supportBigNumbers: true
 });
 
-function serverLookup(roomToken: string, success: (endpoint, port) => void) {
+function serverLookup(roomToken: string, success: (endpoint, port) => void, failure: () => void) {
     console.log('Looking up server....');
     mc.get('SID_' + roomToken, (err, sID, key) =>
     {
@@ -217,9 +217,9 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void) {
 let server = http.createServer(
 (req, res) =>
 {
-    let roomToken = req.url.split('/').pop().split('?')[0];
+    let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
-    console.log('Started trying to foward.');
+    console.log('Started trying to forward.');
     console.log('Request: ' + req);
 
     serverLookup(roomToken, (endPoint, port) => 
@@ -228,6 +228,9 @@ let server = http.createServer(
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         proxy.web(req, res, { target: targetServer });
+    }, () =>
+    {
+        return;
     });
 });
 
@@ -236,7 +239,7 @@ server.on('upgrade',
 {
     let roomToken = req.url.split('/').pop().split('?')[0];
 
-    console.log('Started trying to foward.');
+    console.log('Started trying to forward.');
     console.log('Request: ' + req);
 
     serverLookup(roomToken, (endPoint, port) => 
@@ -245,6 +248,9 @@ server.on('upgrade',
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         proxy.ws(req, socket, head, { target: targetServer });
+    }, () =>
+    {
+        return;
     });
 });
 
@@ -256,5 +262,5 @@ proxy.on('error', function (err, req, res) {
     res.end('Something went wrong. And we are reporting a custom error message.');
 });
 
-console.log("listening on port 9001");
+console.log("Started listening on port 9001.");
 server.listen(9001);
