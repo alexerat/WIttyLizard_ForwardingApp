@@ -146,11 +146,11 @@ function serverLookup(roomToken, success, failure) {
 var server = http.createServer(function (req, res) {
     var roomToken = req.url.split('roomId=').pop().split('&')[0];
     console.log('Started trying to forward.');
-    console.log('Request: ' + req);
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = endPoint + ":" + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
+        console.log('Forwarding http request to: ' + targetServer);
         proxy.web(req, res, { target: targetServer });
     }, function () {
         return;
@@ -159,11 +159,11 @@ var server = http.createServer(function (req, res) {
 server.on('upgrade', function (req, socket, head) {
     var roomToken = req.url.split('/').pop().split('?')[0];
     console.log('Started trying to forward.');
-    console.log('Request: ' + req);
     serverLookup(roomToken, function (endPoint, port) {
-        var targetServer = 'http://' + endPoint + ':' + port;
+        var targetServer = endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
+        console.log('Forwarding websocket request to: ' + targetServer);
         proxy.ws(req, socket, head, { target: targetServer });
     }, function () {
         return;
@@ -173,6 +173,7 @@ proxy.on('error', function (err, req, res) {
     res.writeHead(500, {
         'Content-Type': 'text/plain'
     });
+    console.log('PROXY ERROR: ' + err);
     res.end('Something went wrong. And we are reporting a custom error message.');
 });
 console.log("Started listening on port 9001.");

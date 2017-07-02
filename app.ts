@@ -220,13 +220,13 @@ let server = http.createServer(
     let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
     console.log('Started trying to forward.');
-    console.log('Request: ' + req);
 
     serverLookup(roomToken, (endPoint, port) => 
     {
         let targetServer = endPoint + ":" + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
+        console.log('Forwarding http request to: ' + targetServer);
         proxy.web(req, res, { target: targetServer });
     }, () =>
     {
@@ -240,13 +240,13 @@ server.on('upgrade',
     let roomToken = req.url.split('/').pop().split('?')[0];
 
     console.log('Started trying to forward.');
-    console.log('Request: ' + req);
 
     serverLookup(roomToken, (endPoint, port) => 
     {
-        let targetServer = 'http://' + endPoint + ':' + port;
+        let targetServer = endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
+        console.log('Forwarding websocket request to: ' + targetServer);
         proxy.ws(req, socket, head, { target: targetServer });
     }, () =>
     {
@@ -258,6 +258,8 @@ proxy.on('error', function (err, req, res) {
     res.writeHead(500, {
     'Content-Type': 'text/plain'
     });
+
+    console.log('PROXY ERROR: ' + err);
 
     res.end('Something went wrong. And we are reporting a custom error message.');
 });
