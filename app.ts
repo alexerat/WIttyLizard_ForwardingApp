@@ -62,9 +62,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                 if(err)
                 {
                     console.log('Error getting databse connection. ' + err);
-                    console.log(dbHost);
-                    console.log(dbUser);
-                    console.log(dbPass);
                     return;
                 }
 
@@ -128,52 +125,51 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     console.log('Got everything!');
                                     success(endPoint, port);
                                 });
+
+                                return;
                             }
-                            else
+                            
+                            mc.get('PORT_' + sID, (err, port, key) =>
                             {
-                                mc.get('PORT_' + sID, (err, port, key) =>
+                                if(err != null || err != undefined)
                                 {
-                                    if(err != null || err != undefined)
-                                    {
-                                        console.error('Error while querying memcached. ' + err);
-                                    }
+                                    console.error('Error while querying memcached. ' + err);
+                                }
 
-                                    if(port == null)
+                                if(port == null)
+                                {
+                                    connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID],
+                                    (err, rows: Array<SQLTutorialServer>, fields) =>
                                     {
-                                        connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID],
-                                        (err, rows: Array<SQLTutorialServer>, fields) =>
+                                        if(err)
                                         {
-                                            if(err)
-                                            {
-                                                console.error('Error making server query. ' + err);
-                                                return connection.release();
-                                            }
-                                            if(rows[0] == null || rows[0] == undefined)
-                                            {
-                                                console.error('Did not find server ID: ' + rows[0].Server_ID);
-                                                return connection.release();
-                                            }
+                                            console.error('Error making server query. ' + err);
+                                            return connection.release();
+                                        }
+                                        if(rows[0] == null || rows[0] == undefined)
+                                        {
+                                            console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                            return connection.release();
+                                        }
 
-                                            endPoint = rows[0].End_Point; 
-                                            port = rows[0].Port;
+                                        endPoint = rows[0].End_Point; 
+                                        port = rows[0].Port;
 
-                                            mc.set('END-POINT_' + sID, endPoint);
-                                            mc.set('PORT_' + sID, port);
-                                            mc.set('SID_' + roomToken, sId);
-
-                                            console.log('Got everything!');
-                                            success(endPoint, port);
-                                        });
-                                    }
-                                    else
-                                    {
+                                        mc.set('END-POINT_' + sID, endPoint);
+                                        mc.set('PORT_' + sID, port);
                                         mc.set('SID_' + roomToken, sId);
 
                                         console.log('Got everything!');
                                         success(endPoint, port);
-                                    }
-                                });
-                            }
+                                    });
+                                    return;
+                                }
+
+                                mc.set('SID_' + roomToken, sId);
+
+                                console.log('Got everything!');
+                                success(endPoint, port);
+                            });
                         });
                     });
                 });
@@ -191,7 +187,49 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                 if(endPoint == null)
                 {
-                    console.error('Error while querying memcached. End Point is null.');
+                    my_sql_pool.getConnection((err, connection) =>
+                    {
+                        if(err)
+                        {
+                            console.log('Error getting databse connection. ' + err);
+                            return;
+                        }
+
+                        connection.query('USE Online_Comms',
+                        (err) =>
+                        {
+                            if (err)
+                            {
+                                console.error('Error while setting database schema. ' + err);
+                                return connection.release();
+                            }
+
+                            connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
+                            (err, rows: Array<SQLTutorialServer>, fields) =>
+                            {
+                                if(err)
+                                {
+                                    console.error('Error making server query. ' + err);
+                                    return connection.release();
+                                }
+                                if(rows[0] == null || rows[0] == undefined)
+                                {
+                                    console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                    return connection.release();
+                                }
+
+                                endPoint = rows[0].End_Point; 
+                                let port = rows[0].Port;
+
+                                mc.set('END-POINT_' + sID, endPoint);
+                                mc.set('PORT_' + sID, port);
+
+                                console.log('Got everything!');
+                                success(endPoint, port);
+                            });
+                        });
+                    });
+                    return;
                 }
 
                 mc.get('PORT_' + sID, (err, port, key) =>
@@ -199,11 +237,54 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                     if(err != null || err != undefined)
                     {
                         console.error('Error while querying memcached. ' + err);
+                        return;
                     }
 
                     if(port == null)
                     {
-                        console.error('Error while querying memcached. Port is null.');
+                        my_sql_pool.getConnection((err, connection) =>
+                        {
+                            if(err)
+                            {
+                                console.log('Error getting databse connection. ' + err);
+                                return;
+                            }
+
+                            connection.query('USE Online_Comms',
+                            (err) =>
+                            {
+                                if (err)
+                                {
+                                    console.error('Error while setting database schema. ' + err);
+                                    return connection.release();
+                                }
+
+                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
+                                (err, rows: Array<SQLTutorialServer>, fields) =>
+                                {
+                                    if(err)
+                                    {
+                                        console.error('Error making server query. ' + err);
+                                        return connection.release();
+                                    }
+                                    if(rows[0] == null || rows[0] == undefined)
+                                    {
+                                        console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                        return connection.release();
+                                    }
+
+                                    endPoint = rows[0].End_Point; 
+                                    let port = rows[0].Port;
+
+                                    mc.set('END-POINT_' + sID, endPoint);
+                                    mc.set('PORT_' + sID, port);
+
+                                    console.log('Got everything!');
+                                    success(endPoint, port);
+                                });
+                            });
+                        });
+                        return;
                     }
 
                     console.log('Got everything!');
