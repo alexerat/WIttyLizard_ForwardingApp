@@ -199,7 +199,7 @@ var server = http.createServer(function (req, res) {
     var roomToken = req.url.split('roomId=').pop().split('&')[0];
     console.log('Started trying to forward.');
     serverLookup(roomToken, function (endPoint, port) {
-        var targetServer = endPoint + ":" + port;
+        var targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         console.log('Forwarding http request to: ' + targetServer);
@@ -212,7 +212,7 @@ server.on('upgrade', function (req, socket, head) {
     var roomToken = req.url.split('/').pop().split('?')[0];
     console.log('Started trying to forward.');
     serverLookup(roomToken, function (endPoint, port) {
-        var targetServer = endPoint + ':' + port;
+        var targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         console.log('Forwarding websocket request to: ' + targetServer);
