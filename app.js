@@ -73,9 +73,9 @@ function serverLookup(roomToken, success, failure) {
                                     }
                                     endPoint = rows[0].End_Point;
                                     var port = rows[0].Port;
-                                    mc.set('END-POINT_' + sID, endPoint);
-                                    mc.set('PORT_' + sID, port);
-                                    mc.set('SID_' + roomToken, sID);
+                                    mc.set('END-POINT_' + sID, '' + endPoint);
+                                    mc.set('PORT_' + sID, '' + port);
+                                    mc.set('SID_' + roomToken, '' + sID);
                                     console.log('Got everything!');
                                     success(endPoint, port);
                                 });
@@ -97,15 +97,15 @@ function serverLookup(roomToken, success, failure) {
                                         }
                                         endPoint = rows[0].End_Point;
                                         port = rows[0].Port;
-                                        mc.set('END-POINT_' + sID, endPoint);
-                                        mc.set('PORT_' + sID, port);
-                                        mc.set('SID_' + roomToken, sID);
+                                        mc.set('END-POINT_' + sID, '' + endPoint);
+                                        mc.set('PORT_' + sID, '' + port);
+                                        mc.set('SID_' + roomToken, '' + sID);
                                         console.log('Got everything!');
                                         success(endPoint, port);
                                     });
                                     return;
                                 }
-                                mc.set('SID_' + roomToken, sID);
+                                mc.set('SID_' + roomToken, '' + sID);
                                 console.log('Got everything!');
                                 success(endPoint, port);
                             });
@@ -120,7 +120,7 @@ function serverLookup(roomToken, success, failure) {
                 if (err != null || err != undefined) {
                     console.error('Error while querying memcached. ' + err);
                 }
-                if (endPoint == null) {
+                if (endPoint == null || endPoint == undefined) {
                     my_sql_pool.getConnection(function (err, connection) {
                         if (err) {
                             console.log('Error getting databse connection. ' + err);
@@ -142,8 +142,8 @@ function serverLookup(roomToken, success, failure) {
                                 }
                                 endPoint = rows[0].End_Point;
                                 var port = rows[0].Port;
-                                mc.set('END-POINT_' + sID, endPoint);
-                                mc.set('PORT_' + sID, port);
+                                mc.set('END-POINT_' + sID, '' + endPoint);
+                                mc.set('PORT_' + sID, '' + port);
                                 console.log('Got everything!');
                                 success(endPoint, port);
                             });
@@ -178,8 +178,8 @@ function serverLookup(roomToken, success, failure) {
                                     }
                                     endPoint = rows[0].End_Point;
                                     var port = rows[0].Port;
-                                    mc.set('END-POINT_' + sID, endPoint);
-                                    mc.set('PORT_' + sID, port);
+                                    mc.set('END-POINT_' + sID, '' + endPoint);
+                                    mc.set('PORT_' + sID, '' + port);
                                     console.log('Got everything!');
                                     success(endPoint, port);
                                 });
