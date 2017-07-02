@@ -54,7 +54,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
             console.error('Error while querying memcached. ' + err);
         }
 
-        if(sID == null)
+        if(sID == null || sID == undefined)
         {
             
             my_sql_pool.getConnection((err, connection) =>
@@ -88,7 +88,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                         console.log('Found server ID in database: ' + rows[0].Server_ID);
 
-                        let sId = rows[0].Server_ID;
+                        sID = rows[0].Server_ID;
 
                         console.log('Looking up address....');
 
@@ -101,7 +101,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                             if(endPoint == null)
                             {
-                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID],
+                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
                                 (err, rows: Array<SQLTutorialServer>, fields) =>
                                 {
                                     if(err)
@@ -111,7 +111,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     }
                                     if(rows[0] == null || rows[0] == undefined)
                                     {
-                                        console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                        console.error('Did not find server ID: ' + sID);
                                         return connection.release();
                                     }
 
@@ -120,7 +120,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                                     mc.set('END-POINT_' + sID, endPoint);
                                     mc.set('PORT_' + sID, port);
-                                    mc.set('SID_' + roomToken, sId);
+                                    mc.set('SID_' + roomToken, sID);
 
                                     console.log('Got everything!');
                                     success(endPoint, port);
@@ -138,7 +138,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                                 if(port == null)
                                 {
-                                    connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID],
+                                    connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
                                     (err, rows: Array<SQLTutorialServer>, fields) =>
                                     {
                                         if(err)
@@ -148,7 +148,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                         }
                                         if(rows[0] == null || rows[0] == undefined)
                                         {
-                                            console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                            console.error('Did not find server ID: ' + sID);
                                             return connection.release();
                                         }
 
@@ -157,7 +157,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
 
                                         mc.set('END-POINT_' + sID, endPoint);
                                         mc.set('PORT_' + sID, port);
-                                        mc.set('SID_' + roomToken, sId);
+                                        mc.set('SID_' + roomToken, sID);
 
                                         console.log('Got everything!');
                                         success(endPoint, port);
@@ -165,7 +165,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     return;
                                 }
 
-                                mc.set('SID_' + roomToken, sId);
+                                mc.set('SID_' + roomToken, sID);
 
                                 console.log('Got everything!');
                                 success(endPoint, port);
@@ -214,7 +214,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                 }
                                 if(rows[0] == null || rows[0] == undefined)
                                 {
-                                    console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                    console.error('Did not find server ID: ' + sID);
                                     return connection.release();
                                 }
 
@@ -269,7 +269,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     }
                                     if(rows[0] == null || rows[0] == undefined)
                                     {
-                                        console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                        console.error('Did not find server ID: ' + sID);
                                         return connection.release();
                                     }
 

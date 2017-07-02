@@ -36,7 +36,7 @@ function serverLookup(roomToken, success, failure) {
         if (err != null || err != undefined) {
             console.error('Error while querying memcached. ' + err);
         }
-        if (sID == null) {
+        if (sID == null || sID == undefined) {
             my_sql_pool.getConnection(function (err, connection) {
                 if (err) {
                     console.log('Error getting databse connection. ' + err);
@@ -55,27 +55,27 @@ function serverLookup(roomToken, success, failure) {
                             return connection.release();
                         }
                         console.log('Found server ID in database: ' + rows[0].Server_ID);
-                        var sId = rows[0].Server_ID;
+                        sID = rows[0].Server_ID;
                         console.log('Looking up address....');
                         mc.get('END-POINT_' + sID, function (err, endPoint, key) {
                             if (err != null || err != undefined) {
                                 console.error('Error while querying memcached. ' + err);
                             }
                             if (endPoint == null) {
-                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID], function (err, rows, fields) {
+                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID], function (err, rows, fields) {
                                     if (err) {
                                         console.error('Error making server query. ' + err);
                                         return connection.release();
                                     }
                                     if (rows[0] == null || rows[0] == undefined) {
-                                        console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                        console.error('Did not find server ID: ' + sID);
                                         return connection.release();
                                     }
                                     endPoint = rows[0].End_Point;
                                     var port = rows[0].Port;
                                     mc.set('END-POINT_' + sID, endPoint);
                                     mc.set('PORT_' + sID, port);
-                                    mc.set('SID_' + roomToken, sId);
+                                    mc.set('SID_' + roomToken, sID);
                                     console.log('Got everything!');
                                     success(endPoint, port);
                                 });
@@ -86,26 +86,26 @@ function serverLookup(roomToken, success, failure) {
                                     console.error('Error while querying memcached. ' + err);
                                 }
                                 if (port == null) {
-                                    connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID], function (err, rows, fields) {
+                                    connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID], function (err, rows, fields) {
                                         if (err) {
                                             console.error('Error making server query. ' + err);
                                             return connection.release();
                                         }
                                         if (rows[0] == null || rows[0] == undefined) {
-                                            console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                            console.error('Did not find server ID: ' + sID);
                                             return connection.release();
                                         }
                                         endPoint = rows[0].End_Point;
                                         port = rows[0].Port;
                                         mc.set('END-POINT_' + sID, endPoint);
                                         mc.set('PORT_' + sID, port);
-                                        mc.set('SID_' + roomToken, sId);
+                                        mc.set('SID_' + roomToken, sID);
                                         console.log('Got everything!');
                                         success(endPoint, port);
                                     });
                                     return;
                                 }
-                                mc.set('SID_' + roomToken, sId);
+                                mc.set('SID_' + roomToken, sID);
                                 console.log('Got everything!');
                                 success(endPoint, port);
                             });
@@ -137,7 +137,7 @@ function serverLookup(roomToken, success, failure) {
                                     return connection.release();
                                 }
                                 if (rows[0] == null || rows[0] == undefined) {
-                                    console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                    console.error('Did not find server ID: ' + sID);
                                     return connection.release();
                                 }
                                 endPoint = rows[0].End_Point;
@@ -173,7 +173,7 @@ function serverLookup(roomToken, success, failure) {
                                         return connection.release();
                                     }
                                     if (rows[0] == null || rows[0] == undefined) {
-                                        console.error('Did not find server ID: ' + rows[0].Server_ID);
+                                        console.error('Did not find server ID: ' + sID);
                                         return connection.release();
                                     }
                                     endPoint = rows[0].End_Point;
