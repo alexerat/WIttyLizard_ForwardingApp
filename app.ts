@@ -45,7 +45,6 @@ let connection = mysql.createConnection({
 });
 
 function serverLookup(roomToken: string, success: (endpoint, port) => void, failure: () => void) {
-    console.log('Looking up server....');
     mc.get('SID_' + roomToken, (err, sID, key) =>
     {
         
@@ -86,17 +85,14 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                             return connection.release();
                         }
 
-                        console.log('Found server ID in database: ' + rows[0].Server_ID);
-
                         sID = rows[0].Server_ID;
-
-                        console.log('Looking up address....');
 
                         mc.get('END-POINT_' + sID, (err, endPoint, key) =>
                         {
                             if(err != null || err != undefined)
                             {
                                 console.error('Error while querying memcached. ' + err);
+                                return;
                             }
 
                             if(endPoint == null)
@@ -122,7 +118,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     mc.set('PORT_' + sID, '' + port);
                                     mc.set('SID_' + roomToken, '' + sID);
 
-                                    console.log('Got everything!');
                                     success(endPoint, port);
                                 });
 
@@ -134,6 +129,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                 if(err != null || err != undefined)
                                 {
                                     console.error('Error while querying memcached. ' + err);
+                                    return;
                                 }
 
                                 if(port == null)
@@ -166,8 +162,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                 }
 
                                 mc.set('SID_' + roomToken, '' + sID);
-
-                                console.log('Got everything!');
                                 success(endPoint, port);
                             });
                         });
@@ -183,6 +177,7 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                 if(err != null || err != undefined)
                 {
                     console.error('Error while querying memcached. ' + err);
+                    return;
                 }
 
                 if(endPoint == null || endPoint == undefined)
@@ -224,7 +219,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                 mc.set('END-POINT_' + sID, '' + endPoint);
                                 mc.set('PORT_' + sID, '' + port);
 
-                                console.log('Got everything!');
                                 success(endPoint, port);
                             });
                         });
@@ -279,7 +273,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                                     mc.set('END-POINT_' + sID, '' + endPoint);
                                     mc.set('PORT_' + sID, '' + port);
 
-                                    console.log('Got everything!');
                                     success(endPoint, port);
                                 });
                             });
@@ -287,7 +280,6 @@ function serverLookup(roomToken: string, success: (endpoint, port) => void, fail
                         return;
                     }
 
-                    console.log('Got everything!');
                     success(endPoint, port);
                 });
             });
@@ -300,14 +292,12 @@ let server = http.createServer(
 {
     let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
-    console.log('Started trying to forward.');
-
     serverLookup(roomToken, (endPoint, port) => 
     {
         let targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
-        console.log('Forwarding http request to: ' + targetServer);
+        //console.log('Forwarding http request to: ' + targetServer);
         proxy.web(req, res, { target: targetServer });
     }, () =>
     {
@@ -320,14 +310,12 @@ server.on('upgrade',
 {
     let roomToken = req.url.split('/').pop().split('?')[0];
 
-    console.log('Started trying to forward.');
-
     serverLookup(roomToken, (endPoint, port) => 
     {
         let targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
-        console.log('Forwarding websocket request to: ' + targetServer);
+        //console.log('Forwarding websocket request to: ' + targetServer);
         proxy.ws(req, socket, head, { target: targetServer });
     }, () =>
     {

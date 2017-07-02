@@ -31,7 +31,6 @@ var connection = mysql.createConnection({
     supportBigNumbers: true
 });
 function serverLookup(roomToken, success, failure) {
-    console.log('Looking up server....');
     mc.get('SID_' + roomToken, function (err, sID, key) {
         if (err != null || err != undefined) {
             console.error('Error while querying memcached. ' + err);
@@ -54,12 +53,11 @@ function serverLookup(roomToken, success, failure) {
                         if (rows[0] == null || rows[0] == undefined) {
                             return connection.release();
                         }
-                        console.log('Found server ID in database: ' + rows[0].Server_ID);
                         sID = rows[0].Server_ID;
-                        console.log('Looking up address....');
                         mc.get('END-POINT_' + sID, function (err, endPoint, key) {
                             if (err != null || err != undefined) {
                                 console.error('Error while querying memcached. ' + err);
+                                return;
                             }
                             if (endPoint == null) {
                                 connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID], function (err, rows, fields) {
@@ -76,7 +74,6 @@ function serverLookup(roomToken, success, failure) {
                                     mc.set('END-POINT_' + sID, '' + endPoint);
                                     mc.set('PORT_' + sID, '' + port);
                                     mc.set('SID_' + roomToken, '' + sID);
-                                    console.log('Got everything!');
                                     success(endPoint, port);
                                 });
                                 return;
@@ -84,6 +81,7 @@ function serverLookup(roomToken, success, failure) {
                             mc.get('PORT_' + sID, function (err, port, key) {
                                 if (err != null || err != undefined) {
                                     console.error('Error while querying memcached. ' + err);
+                                    return;
                                 }
                                 if (port == null) {
                                     connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID], function (err, rows, fields) {
@@ -106,7 +104,6 @@ function serverLookup(roomToken, success, failure) {
                                     return;
                                 }
                                 mc.set('SID_' + roomToken, '' + sID);
-                                console.log('Got everything!');
                                 success(endPoint, port);
                             });
                         });
@@ -119,6 +116,7 @@ function serverLookup(roomToken, success, failure) {
             mc.get('END-POINT_' + sID, function (err, endPoint, key) {
                 if (err != null || err != undefined) {
                     console.error('Error while querying memcached. ' + err);
+                    return;
                 }
                 if (endPoint == null || endPoint == undefined) {
                     my_sql_pool.getConnection(function (err, connection) {
@@ -144,7 +142,6 @@ function serverLookup(roomToken, success, failure) {
                                 var port = rows[0].Port;
                                 mc.set('END-POINT_' + sID, '' + endPoint);
                                 mc.set('PORT_' + sID, '' + port);
-                                console.log('Got everything!');
                                 success(endPoint, port);
                             });
                         });
@@ -180,14 +177,12 @@ function serverLookup(roomToken, success, failure) {
                                     var port = rows[0].Port;
                                     mc.set('END-POINT_' + sID, '' + endPoint);
                                     mc.set('PORT_' + sID, '' + port);
-                                    console.log('Got everything!');
                                     success(endPoint, port);
                                 });
                             });
                         });
                         return;
                     }
-                    console.log('Got everything!');
                     success(endPoint, port);
                 });
             });
@@ -197,12 +192,11 @@ function serverLookup(roomToken, success, failure) {
 ;
 var server = http.createServer(function (req, res) {
     var roomToken = req.url.split('roomId=').pop().split('&')[0];
-    console.log('Started trying to forward.');
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
-        console.log('Forwarding http request to: ' + targetServer);
+        //console.log('Forwarding http request to: ' + targetServer);
         proxy.web(req, res, { target: targetServer });
     }, function () {
         return;
@@ -210,12 +204,11 @@ var server = http.createServer(function (req, res) {
 });
 server.on('upgrade', function (req, socket, head) {
     var roomToken = req.url.split('/').pop().split('?')[0];
-    console.log('Started trying to forward.');
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
-        console.log('Forwarding websocket request to: ' + targetServer);
+        //console.log('Forwarding websocket request to: ' + targetServer);
         proxy.ws(req, socket, head, { target: targetServer });
     }, function () {
         return;
