@@ -69,6 +69,7 @@ function serverBackendsIdLookup(roomToken, success, failure) {
             });
         }
         else {
+            lookUpTable[roomToken] = sID;
             serverDataLookup(sID, success, failure);
         }
     });
@@ -154,6 +155,7 @@ function serverBackendDataLookup(sID, success, failure) {
                 });
                 return;
             }
+            servers[sID] = { Server_ID: sID, End_Point: endPoint, Port: port, Num_Rooms: null, Zone: null, Expected_End: null, isUp: null };
             success(endPoint, port);
         });
     });
