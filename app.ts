@@ -268,7 +268,7 @@ server.on('upgrade',
 
     serverLookup(roomToken, (endPoint, port) => 
     {
-        let targetServer = 'http://' + endPoint + ':' + port;
+        let targetServer = 'ws://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         //console.log('Forwarding websocket request to: ' + targetServer);

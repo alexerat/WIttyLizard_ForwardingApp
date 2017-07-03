@@ -173,7 +173,7 @@ var server = http.createServer(function (req, res) {
 server.on('upgrade', function (req, socket, head) {
     var roomToken = req.url.split('/').pop().split('?')[0];
     serverLookup(roomToken, function (endPoint, port) {
-        var targetServer = 'http://' + endPoint + ':' + port;
+        var targetServer = 'ws://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
         //console.log('Forwarding websocket request to: ' + targetServer);
