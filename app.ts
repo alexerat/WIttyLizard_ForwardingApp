@@ -27,7 +27,7 @@ let my_sql_pool = mysql.createPool({
   supportBigNumbers: true
 });
 
-let proxy = httpProxy.createProxyServer({});
+let proxy = httpProxy.createProxyServer({ ws: true });
 
 interface IDictionary {
      [index: string]: number;

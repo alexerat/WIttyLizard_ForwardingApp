@@ -20,7 +20,7 @@ var my_sql_pool = mysql.createPool({
     database: 'Online_Comms',
     supportBigNumbers: true
 });
-var proxy = httpProxy.createProxyServer({});
+var proxy = httpProxy.createProxyServer({ ws: true });
 var servers = [];
 var lookUpTable = {};
 var connection = mysql.createConnection({
