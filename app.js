@@ -175,6 +175,10 @@ var server = http.createServer(function (req, res) {
 server.on('upgrade', function (req, socket, head) {
     var roomToken = req.url.split('/').pop().split('?')[0];
     console.log('Recieved upgrade!');
+    console.log('Req URL: ' + req.url);
+    console.log('Room Token: ' + roomToken);
+    console.log(JSON.stringify(req.headers));
+    '';
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = 'ws://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
