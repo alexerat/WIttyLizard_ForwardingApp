@@ -250,8 +250,6 @@ let server = http.createServer(
 {
     let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
-    console.log('Http headers: ' + JSON.stringify(req.headers));
-
     serverLookup(roomToken, (endPoint, port) => 
     {
         let targetServer = 'http://' + endPoint + ':' + port;
@@ -268,12 +266,7 @@ let server = http.createServer(
 server.on('upgrade',
 (req, socket, head) =>
 {
-    let roomToken = req.url.split('/').pop().split('?')[0];
-
-    console.log('Recieved upgrade!');
-    console.log('Req URL: ' + req.url);
-    console.log('Room Token: ' + roomToken);
-    console.log(JSON.stringify(req.headers));
+    let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
     serverLookup(roomToken, (endPoint, port) => 
     {
