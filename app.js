@@ -162,6 +162,7 @@ function serverBackendDataLookup(sID, success, failure) {
 }
 var server = http.createServer(function (req, res) {
     var roomToken = req.url.split('roomId=').pop().split('&')[0];
+    console.log('Http headers: ' + JSON.stringify(req.headers));
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
@@ -178,7 +179,6 @@ server.on('upgrade', function (req, socket, head) {
     console.log('Req URL: ' + req.url);
     console.log('Room Token: ' + roomToken);
     console.log(JSON.stringify(req.headers));
-    '';
     serverLookup(roomToken, function (endPoint, port) {
         var targetServer = 'ws://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
