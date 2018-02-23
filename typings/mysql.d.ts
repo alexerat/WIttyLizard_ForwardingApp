@@ -6,8 +6,8 @@ declare module 'mysql' {
 
 declare namespace MySql {
 	interface MySqlModule {
-		createSQLConnection(connectionUri: string): SQLConnection;
-		createSQLConnection(config: SQLConnectionConfig): SQLConnection;
+		createConnection(connectionUri: string): SQLConnection;
+		createConnection(config: SQLConnectionConfig): SQLConnection;
 		createPool(config: PoolConfig): Pool;
 		createPoolCluster(config?: PoolClusterConfig): PoolCluster;
 		escape(value: any): string;

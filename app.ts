@@ -5,6 +5,7 @@ const http = require('http');
 const memjs = require('memjs');
 const httpProxy: Proxy.Server = require('http-proxy');
 const mysql: MySql.MySqlModule = require('mysql');
+const NTRIES = 10;
 
 // Environment variables are defined in app.yaml.
 let MEMCACHE_URL = process.env.MEMCACHE_URL || '127.0.0.1:11211';
@@ -34,6 +35,7 @@ interface IDictionary {
 }
 
 let servers: Array<SQLTutorialServer> = [];
+let sIDLookup: IDictionary = {};
 let lookUpTable: IDictionary = {};
 
 let connection = mysql.createConnection({
@@ -44,19 +46,141 @@ let connection = mysql.createConnection({
     supportBigNumbers: true
 });
 
-function serverLookup(roomToken: string, success: (endpoint, port) => void, failure: () => void) 
+// TODO: Be much more elegent in selection.
+function getNewServerId(roomToken: string) : void
+{
+    let pID = lookUpTable[roomToken];
+    my_sql_pool.getConnection((err, connection) =>
+    {
+        if(err)
+        {
+            console.log('Error getting databse connection. ' + err);
+            return;
+        }
+
+        connection.query('USE Online_Comms',
+        (err) =>
+        {
+            if(err)
+            {
+                console.error('Error while setting database schema. ' + err);
+                return connection.release();
+            }
+
+            connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [pID],
+            (err, rows: Array<SQLTutorialServer>, fields) =>
+            {
+                if(err)
+                {
+                    console.error('Error making server query. ' + err);
+                    return connection.release();
+                }
+                if(rows[0] != null && rows[0] != undefined)
+                {
+                    console.error('Did not find current server.');
+                    return connection.release();
+                }
+
+                if(rows[0].isUp)
+                {
+                    console.error('Current server is fine.');
+                    return connection.release();
+                }
+
+                connection.query('SELECT * FROM Tutorial_Servers WHERE isUp = ?', [true],
+                (err, rows: Array<SQLTutorialServer>, fields) =>
+                {
+                    if(err)
+                    {
+                        console.error('Error making server query. ' + err);
+                        return connection.release();
+                    }
+                    if(rows[0] == null || rows[0] == undefined)
+                    {
+                        console.error('Did not find new server.');
+                        return connection.release();
+                    }
+
+                    
+
+                    connection.query('UPDATE Tutorial_Room_Table SET Server_ID ? WHERE Server_ID = ? Access_Token = ?', [rows[0].Server_ID, pID, roomToken],
+                    (err, rows: Array<SQLTutorialRoom>, fields) =>
+                    {
+                        if(err)
+                        {
+                            console.error('Error making server query. ' + err);
+                            return connection.release();
+                        }
+
+                        connection.query('SELECT * FROM Tutorial_Room_Table WHERE Access_Token = ?', [roomToken],
+                        (err, rows: Array<SQLTutorialServer>, fields) =>
+                        {
+                            if(err)
+                            {
+                                console.error('Error making server query. ' + err);
+                                return connection.release();
+                            }
+                            if(rows[0] == null || rows[0] == undefined)
+                            {
+                                console.error('Did not find new server.');
+                                return connection.release();
+                            }
+
+                            lookUpTable[roomToken] = rows[0].Server_ID;
+                            if(servers[rows[0].Server_ID] == null || servers[rows[0].Server_ID] == undefined)
+                            {
+                                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [rows[0].Server_ID],
+                                (err, rows: Array<SQLTutorialServer>, fields) =>
+                                {
+                                    if(err)
+                                    {
+                                        console.error('Error making server query. ' + err);
+                                        return connection.release();
+                                    }
+                                    if(rows[0] == null || rows[0] == undefined)
+                                    {
+                                        console.error('Did not find server.');
+                                        return connection.release();
+                                    }
+
+                                    servers[rows[0].Server_ID] = rows[0];
+                                    return connection.release();
+                                });
+                            }
+                            else
+                            {
+                                return connection.release();
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function serverLookup(tries: number, roomToken: string, success: (endpoint, port) => void, failure: () => void) : void
 {
     let sID = lookUpTable[roomToken];
 
     if(sID == null || sID == undefined)
     {
-        return serverBackendsIdLookup(roomToken, success, failure);
+        if(tries > NTRIES)
+        {
+            return failure();
+        }
+        if(!servers[sID].isUp || servers[sID] == null || servers[sID] == undefined && tries > 0)
+        {
+            getNewServerId(roomToken);
+        }
+        serverBackendsIdLookup(tries, roomToken, success, failure);
+        return;
     }
 
-    serverDataLookup(sID, success, failure);
+    serverDataLookup(tries, sID, roomToken, success, failure);
 }
 
-function serverBackendsIdLookup(roomToken: string, success: (endpoint, port) => void, failure: () => void) 
+function serverBackendsIdLookup(tries: number, roomToken: string, success: (endpoint, port) => void, failure: () => void) : void
 {
     mc.get('SID_' + roomToken, (err, sID, key) =>
     {
@@ -72,7 +196,7 @@ function serverBackendsIdLookup(roomToken: string, success: (endpoint, port) => 
                 if(err)
                 {
                     console.log('Error getting databse connection. ' + err);
-                    return;
+                    return serverLookup(tries + 1, roomToken, success, failure);
                 }
 
                 connection.query('USE Online_Comms',
@@ -81,7 +205,8 @@ function serverBackendsIdLookup(roomToken: string, success: (endpoint, port) => 
                     if (err)
                     {
                         console.error('Error while setting database schema. ' + err);
-                        return connection.release();
+                        connection.release();
+                        return serverLookup(tries + 1, roomToken, success, failure);
                     }
 
                     connection.query('SELECT * FROM Tutorial_Room_Table WHERE Access_Token = ?', [roomToken],
@@ -89,18 +214,26 @@ function serverBackendsIdLookup(roomToken: string, success: (endpoint, port) => 
                     {
                         if(err)
                         {
-                            return connection.release();
+                            connection.release();
+                            return serverLookup(tries + 1, roomToken, success, failure);
                         }
                         if(rows[0] == null || rows[0] == undefined)
                         {
-                            return connection.release();
+                            connection.release();
+                            return serverLookup(tries + 1, roomToken, success, failure);
                         }
 
                         sID = rows[0].Server_ID;
                         mc.set('SID_' + roomToken, '' + sID);
                         lookUpTable[roomToken] = sID;
 
-                        serverDataLookup(sID, success, failure);
+                        connection.release();
+                        if(!servers[sID].isUp || servers[sID] == null || servers[sID] == undefined && tries > 0)
+                        {
+                            sID = getNewServerId(roomToken);
+                        }
+                        serverDataLookup(tries, sID, roomToken, success, failure);
+
                     });
                 });
             });
@@ -108,31 +241,43 @@ function serverBackendsIdLookup(roomToken: string, success: (endpoint, port) => 
         else
         {
             lookUpTable[roomToken] = sID;
-            serverDataLookup(sID, success, failure);
+            if(!servers[sID].isUp || servers[sID] == null || servers[sID] == undefined && tries > 0)
+            {
+                sID = getNewServerId(roomToken);
+            }
+            serverDataLookup(tries, sID, roomToken, success, failure);
+
         }
     });
 };
 
-function serverDataLookup(sID: number, success: (endpoint, port) => void, failure: () => void) 
+function serverDataLookup(tries: number, sID: number, roomToken: string, success: (endpoint, port) => void, failure: () => void) : void
 {
     let serverData = servers[sID];
 
     if(serverData == null || serverData == undefined)
     {
-        return serverBackendDataLookup(sID, success, failure);
+        return serverBackendDataLookup(tries, sID, roomToken, success, failure);
     }
 
-    success(serverData.End_Point, serverData.Port);
+    if(serverData.isUp)
+    {
+        return success(serverData.End_Point, serverData.Port);
+    }
+    else
+    {
+        return serverLookup(tries + 1, roomToken, success, failure);
+    }
 }
 
-function serverBackendDataLookup(sID: number, success: (endpoint, port) => void, failure: () => void) 
+function serverBackendDataLookup(tries: number, sID: number, roomToken: string, success: (endpoint, port) => void, failure: () => void) : void
 {
     mc.get('END-POINT_' + sID, (err, endPoint, key) =>
     {
         if(err != null || err != undefined)
         {
             console.error('Error while querying memcached. ' + err);
-            return;
+            return serverLookup(tries + 1, roomToken, success, failure);
         }
 
         if(endPoint == null || endPoint == undefined)
@@ -142,7 +287,7 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                 if(err)
                 {
                     console.log('Error getting databse connection. ' + err);
-                    return;
+                    return serverLookup(tries + 1, roomToken, success, failure);
                 }
 
                 connection.query('USE Online_Comms',
@@ -151,7 +296,8 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                     if (err)
                     {
                         console.error('Error while setting database schema. ' + err);
-                        return connection.release();
+                        connection.release();
+                        return serverLookup(tries + 1, roomToken, success, failure);
                     }
 
                     connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
@@ -160,12 +306,14 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                         if(err)
                         {
                             console.error('Error making server query. ' + err);
-                            return connection.release();
+                            connection.release();
+                            return serverLookup(tries + 1, roomToken, success, failure);
                         }
                         if(rows[0] == null || rows[0] == undefined)
                         {
                             console.error('Did not find server ID: ' + sID);
-                            return connection.release();
+                            connection.release();
+                            return serverLookup(tries + 1, roomToken, success, failure);
                         }
 
                         let endPoint = rows[0].End_Point; 
@@ -174,7 +322,9 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                         mc.set('END-POINT_' + sID, '' + endPoint);
                         mc.set('PORT_' + sID, '' + port);
                         servers[sID] = rows[0];
+                        sIDLookup[endPoint + port] = sID;
 
+                        connection.release();
                         success(endPoint, port);
                     });
                 });
@@ -187,7 +337,7 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
             if(err != null || err != undefined)
             {
                 console.error('Error while querying memcached. ' + err);
-                return;
+                return serverLookup(tries + 1, roomToken, success, failure);
             }
 
             if(port == null)
@@ -197,7 +347,7 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                     if(err)
                     {
                         console.log('Error getting databse connection. ' + err);
-                        return;
+                        return serverLookup(tries + 1, roomToken, success, failure);
                     }
 
                     connection.query('USE Online_Comms',
@@ -206,7 +356,8 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                         if (err)
                         {
                             console.error('Error while setting database schema. ' + err);
-                            return connection.release();
+                            connection.release();
+                            return serverLookup(tries + 1, roomToken, success, failure);
                         }
 
                         connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
@@ -215,12 +366,14 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                             if(err)
                             {
                                 console.error('Error making server query. ' + err);
-                                return connection.release();
+                                connection.release();
+                                return serverLookup(tries + 1, roomToken, success, failure);
                             }
                             if(rows[0] == null || rows[0] == undefined)
                             {
                                 console.error('Did not find server ID: ' + sID);
-                                return connection.release();
+                                connection.release();
+                                return serverLookup(tries + 1, roomToken, success, failure);
                             }
 
                             let endPoint = rows[0].End_Point; 
@@ -229,7 +382,9 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                             mc.set('END-POINT_' + sID, '' + endPoint);
                             mc.set('PORT_' + sID, '' + port);
                             servers[sID] = rows[0];
+                            sIDLookup[endPoint + port] = sID;
 
+                            connection.release();
                             success(endPoint, port);
                         });
                     });
@@ -237,20 +392,19 @@ function serverBackendDataLookup(sID: number, success: (endpoint, port) => void,
                 return;
             }
 
-            servers[sID] = { Server_ID: sID, End_Point: endPoint, Port: port, Num_Rooms: null, Zone: null, Expected_End: null, isUp: null };
+            servers[sID] = { Server_ID: sID, End_Point: endPoint, Port: port, Num_Rooms: null, Zone: null, Expected_End: null, isUp: true };
+            sIDLookup[endPoint + port] = sID;
             success(endPoint, port);
         });
     });
 }
-
-
 
 let server = http.createServer(
 (req, res) =>
 {
     let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
-    serverLookup(roomToken, (endPoint, port) => 
+    serverLookup(0, roomToken, (endPoint, port) => 
     {
         let targetServer = 'http://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
@@ -268,12 +422,11 @@ server.on('upgrade',
 {
     let roomToken = req.url.split('roomId=').pop().split('&')[0];
 
-    serverLookup(roomToken, (endPoint, port) => 
+    serverLookup(0, roomToken, (endPoint, port) => 
     {
         let targetServer = 'ws://' + endPoint + ':' + port;
         // You can define here your custom logic to handle the request
         // and then proxy the request.
-        console.log('Forwarding websocket request to: ' + targetServer);
         proxy.ws(req, socket, head, { target: targetServer });
     }, () =>
     {
@@ -286,6 +439,67 @@ proxy.on('error', function (err, req, res) {
     'Content-Type': 'text/plain'
     });
 
+    // Server failed, get a new server ID.
+    
+    let urlEnd = req.url.split("//").pop();
+
+    let endPoint = urlEnd.split(":")[0];
+    let port = urlEnd.split(":").pop().split("/")[0];
+
+    let sID = sIDLookup[endPoint + port];
+
+    if(servers[sID].isUp)
+    {
+        servers[sID].isUp = false;
+        mc.set('ISUP_' + sID, '' + false);
+
+        my_sql_pool.getConnection((err, connection) =>
+        {
+            if(err)
+            {
+                console.log('Error getting databse connection. ' + err);
+                return;
+            }
+
+            connection.query('USE Online_Comms',
+            (err) =>
+            {
+                if (err)
+                {
+                    console.error('Error while setting database schema. ' + err);
+                    return connection.release();
+                }
+
+                connection.query('SELECT * FROM Tutorial_Servers WHERE Server_ID = ?', [sID],
+                (err, rows: Array<SQLTutorialServer>, fields) =>
+                {
+                    if(err || rows[0] == null || rows[0] == undefined)
+                    {
+                        console.error('Error making server query. ' + err);
+                        return connection.release();
+                    }
+
+                    if(!rows[0].isUp)
+                    {
+                        return connection.release();
+                    }
+
+                    connection.query('SET isUp = ? WHERE Server_ID = ?', [false, sID],
+                    (err, rows: Array<SQLTutorialServer>, fields) =>
+                    {
+                        if(err)
+                        {
+                            console.error('Error making server query. ' + err);
+                            return connection.release();
+                        }
+
+                        connection.release();
+                    });
+                });
+            });
+        });
+    }
+    
     console.log('PROXY ERROR: ' + err);
 
     res.end('Something went wrong. And we are reporting a custom error message.');
